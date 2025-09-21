@@ -6,272 +6,29 @@
     <title>🏪 Agent Marketplace - Internet of Agents</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            min-height: 100vh;
-            color: white;
-            padding: 20px;
-        }
-        
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 40px 0;
-        }
-        
-        h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.8;
-            margin-bottom: 30px;
-        }
-        
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-        
-        @media (max-width: 1024px) {
-            .main-grid { grid-template-columns: 1fr; }
-        }
-        
-        .section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-        
-        .section-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .agent-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-        
-        .agent-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-        
-        .agent-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-        
-        .agent-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .agent-category {
-            font-size: 0.8rem;
-            opacity: 0.7;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-        
-        .agent-price {
-            text-align: right;
-        }
-        
-        .price-sol {
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-        
-        .price-usd {
-            font-size: 0.8rem;
-            opacity: 0.7;
-        }
-        
-        .agent-desc {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-            margin-bottom: 12px;
-            line-height: 1.4;
-        }
-        
-        .agent-stats {
-            display: flex;
-            gap: 15px;
-            font-size: 0.8rem;
-            opacity: 0.7;
-        }
-        
-        .query-input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 15px 20px;
-            font-size: 1rem;
-            color: white;
-            margin-bottom: 20px;
-            font-family: inherit;
-        }
-        
-        .query-input::placeholder { color: rgba(255, 255, 255, 0.5); }
-        .query-input:focus { outline: none; border-color: rgba(255, 255, 255, 0.4); }
-        
-        .agent-toggles {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .agent-toggle {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 10px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-        
-        .agent-toggle:hover { background: rgba(255, 255, 255, 0.15); }
-        
-        .agent-toggle.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-color: transparent;
-        }
-        
-        .cost-summary {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-        }
-        
-        .cost-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        
-        .execute-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-            border-radius: 12px;
-            padding: 15px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-        
-        .execute-btn:hover { transform: translateY(-2px); }
-        .execute-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        
-        .status-message {
-            padding: 15px;
-            border-radius: 12px;
-            margin: 15px 0;
-            font-weight: 500;
-        }
-        
-        .status-success { background: rgba(40, 167, 69, 0.2); border: 1px solid rgba(40, 167, 69, 0.4); }
-        .status-processing { background: rgba(255, 193, 7, 0.2); border: 1px solid rgba(255, 193, 7, 0.4); }
-        .status-error { background: rgba(220, 53, 69, 0.2); border: 1px solid rgba(220, 53, 69, 0.4); }
-        
-        .results-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 30px;
+        /* keep all your existing styles... */
+
+        /* Live updates panel */
+        .live-updates {
             margin-top: 30px;
-            display: none;
-        }
-        
-        .workflow-result {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 15px;
-            padding: 25px;
+            padding: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            line-height: 1.5;
         }
-        
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .result-query {
-            font-size: 1.2rem;
+        .live-updates h3 {
+            margin-bottom: 10px;
             font-weight: 600;
         }
-        
-        .agent-workflow {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .workflow-step {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 10px 16px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .update-message {
+            margin-bottom: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
@@ -290,19 +47,16 @@
             
             <section class="section">
                 <h2 class="section-title">⚡ Create Workflow</h2>
-                
                 <input 
                     type="text" 
                     class="query-input" 
                     id="queryInput"
                     placeholder="Describe your project (e.g., sustainable energy business plan)..."
                 >
-                
                 <div>
                     <p style="margin-bottom: 10px; font-weight: 500;">Select Agents:</p>
                     <div class="agent-toggles" id="agentToggles"></div>
                 </div>
-                
                 <div class="cost-summary">
                     <div class="cost-row">
                         <span>Selected Agents:</span>
@@ -317,12 +71,10 @@
                         <span id="totalCostUSD">$0.00</span>
                     </div>
                 </div>
-                
                 <button class="execute-btn" id="executeBtn" disabled>
                     <span id="btnText">Execute Workflow</span>
                     <span id="btnLoader" class="loading" style="display: none;"></span>
                 </button>
-                
                 <div id="statusMessage"></div>
             </section>
         </div>
@@ -331,253 +83,65 @@
             <h2 class="section-title">📊 Workflow Results</h2>
             <div id="workflowResults"></div>
         </section>
+
+        <!-- Live Updates Panel -->
+        <section class="section live-updates">
+            <h3>📡 Live Updates</h3>
+            <div id="liveUpdatesLog"></div>
+        </section>
     </div>
     
     <script>
         let availableAgents = [];
         let selectedAgents = [];
         let solToUsd = 180;
-        
-        // Initialize
-        document.addEventListener('DOMContentLoaded', loadAgents);
-        
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAgents();
+            initWebSocket();
+        });
+
+        // -------------------
+        // WebSocket live updates
+        // -------------------
+        function initWebSocket() {
+            let wsUrl = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws/updates";
+            const ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => logUpdate("✅ Connected to live updates server");
+            ws.onmessage = (event) => logUpdate(event.data);
+            ws.onerror = (err) => logUpdate("❌ WebSocket error");
+            ws.onclose = () => logUpdate("⚠️ Disconnected from live updates");
+        }
+
+        function logUpdate(message) {
+            const log = document.getElementById('liveUpdatesLog');
+            const entry = document.createElement('div');
+            entry.className = 'update-message';
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // -------------------
+        // Existing JS functions (loadAgents, render, executeWorkflow, etc.)
+        // -------------------
         async function loadAgents() {
             try {
                 const response = await fetch('/api/agents');
                 const data = await response.json();
                 availableAgents = data.agents;
-                
                 renderAgentCards();
                 renderAgentToggles();
                 initializeEventListeners();
-                
                 console.log('Agents loaded:', availableAgents);
             } catch (error) {
                 console.error('Failed to load agents:', error);
                 showStatus('Failed to load agents. Please refresh the page.', 'error');
             }
         }
-        
-        function renderAgentCards() {
-            const agentsGrid = document.getElementById('agentsGrid');
-            agentsGrid.innerHTML = availableAgents.map(agent => `
-                <div class="agent-card">
-                    <div class="agent-header">
-                        <div>
-                            <div class="agent-name">${agent.icon} ${agent.name}</div>
-                            <div class="agent-category">${agent.category}</div>
-                        </div>
-                        <div class="agent-price">
-                            <div class="price-sol">${agent.price_sol.toFixed(3)} SOL</div>
-                            <div class="price-usd">$${agent.price_usd.toFixed(2)}</div>
-                        </div>
-                    </div>
-                    <div class="agent-desc">${agent.description}</div>
-                    <div class="agent-stats">
-                        <span>★ ${agent.rating}</span>
-                        <span>📈 ${agent.total_uses.toLocaleString()} uses</span>
-                        <span>⚡ ${agent.avg_processing_time}s</span>
-                        <span>✅ ${agent.success_rate}%</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function renderAgentToggles() {
-            const agentToggles = document.getElementById('agentToggles');
-            agentToggles.innerHTML = availableAgents.map(agent => `
-                <button class="agent-toggle" data-agent-id="${agent.id}">
-                    ${agent.icon} ${agent.name.split(' ')[0]} (${agent.price_sol.toFixed(3)} SOL)
-                </button>
-            `).join('');
-        }
-        
-        function initializeEventListeners() {
-            // Agent toggles
-            document.getElementById('agentToggles').addEventListener('click', (e) => {
-                const button = e.target.closest('.agent-toggle');
-                if (!button) return;
-                
-                const agentId = button.dataset.agentId;
-                toggleAgentSelection(agentId, button);
-            });
-            
-            // Query input
-            document.getElementById('queryInput').addEventListener('input', updateExecuteButton);
-            
-            // Execute button
-            document.getElementById('executeBtn').addEventListener('click', executeWorkflow);
-        }
-        
-        function toggleAgentSelection(agentId, button) {
-            const index = selectedAgents.indexOf(agentId);
-            
-            if (index > -1) {
-                selectedAgents.splice(index, 1);
-                button.classList.remove('active');
-            } else {
-                selectedAgents.push(agentId);
-                button.classList.add('active');
-            }
-            
-            updateCostSummary();
-            updateExecuteButton();
-        }
-        
-        function updateCostSummary() {
-            const selectedAgentObjects = availableAgents.filter(agent => 
-                selectedAgents.includes(agent.id)
-            );
-            
-            const totalCostSOL = selectedAgentObjects.reduce((sum, agent) => 
-                sum + agent.price_sol, 0
-            );
-            const totalCostUSD = totalCostSOL * solToUsd;
-            
-            document.getElementById('selectedCount').textContent = selectedAgents.length;
-            document.getElementById('totalCostSOL').textContent = `${totalCostSOL.toFixed(3)} SOL`;
-            document.getElementById('totalCostUSD').textContent = `$${totalCostUSD.toFixed(2)}`;
-        }
-        
-        function updateExecuteButton() {
-            const hasQuery = document.getElementById('queryInput').value.trim().length > 0;
-            const hasAgents = selectedAgents.length > 0;
-            
-            document.getElementById('executeBtn').disabled = !hasQuery || !hasAgents;
-        }
-        
-        async function executeWorkflow() {
-            const query = document.getElementById('queryInput').value.trim();
-            if (!query || selectedAgents.length === 0) return;
-            
-            setExecuteButtonLoading(true);
-            showStatus('Processing workflow...', 'processing');
-            
-            try {
-                const response = await fetch('/api/workflow/execute', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        query: query,
-                        selected_agents: selectedAgents,
-                        user_wallet: 'demo_wallet_' + Date.now(),
-                        user_id: 'demo_user'
-                    })
-                });
-                
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const workflow = await response.json();
-                
-                showStatus('Workflow completed successfully!', 'success');
-                displayWorkflowResults(workflow);
-                
-            } catch (error) {
-                console.error('Workflow execution failed:', error);
-                showStatus('Workflow failed. Please try again.', 'error');
-            } finally {
-                setExecuteButtonLoading(false);
-            }
-        }
-        
-        function setExecuteButtonLoading(loading) {
-            const btnText = document.getElementById('btnText');
-            const btnLoader = document.getElementById('btnLoader');
-            const executeBtn = document.getElementById('executeBtn');
-            
-            if (loading) {
-                executeBtn.disabled = true;
-                btnText.style.display = 'none';
-                btnLoader.style.display = 'inline-block';
-            } else {
-                btnText.style.display = 'inline';
-                btnLoader.style.display = 'none';
-                updateExecuteButton();
-            }
-        }
-        
-        function showStatus(message, type) {
-            const statusMessage = document.getElementById('statusMessage');
-            const icon = type === 'success' ? '✅' : type === 'processing' ? '⏳' : '❌';
-            
-            statusMessage.innerHTML = `
-                <div class="status-message status-${type}">
-                    ${icon} ${message}
-                </div>
-            `;
-            
-            if (type !== 'processing') {
-                setTimeout(() => statusMessage.innerHTML = '', 5000);
-            }
-        }
-        
-        function displayWorkflowResults(workflow) {
-            const resultsSection = document.getElementById('resultsSection');
-            const workflowResults = document.getElementById('workflowResults');
-            
-            resultsSection.style.display = 'block';
-            
-            workflowResults.innerHTML = `
-                <div class="workflow-result">
-                    <div class="result-header">
-                        <div>
-                            <div class="result-query">"${workflow.query}"</div>
-                            <div style="opacity: 0.7; font-size: 0.9rem; margin-top: 5px;">
-                                Workflow ID: ${workflow.id.substring(0, 8)}...
-                            </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div>${workflow.total_cost_sol.toFixed(3)} SOL</div>
-                            <div style="font-size: 0.8rem; opacity: 0.7;">$${workflow.total_cost_usd.toFixed(2)}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="agent-workflow">
-                        ${selectedAgents.map(agentId => {
-                            const agent = availableAgents.find(a => a.id === agentId);
-                            return `<div class="workflow-step">${agent.icon} ${agent.name.split(' ')[0]}</div>`;
-                        }).join('')}
-                    </div>
-                    
-                    <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-                        <strong>✅ Workflow Completed Successfully!</strong><br><br>
-                        
-                        ${workflow.results.search ? `
-                            <strong>🔍 Market Research:</strong> Found high-quality sources with market intelligence showing significant growth opportunity.<br><br>
-                        ` : ''}
-                        
-                        ${workflow.results.content ? `
-                            <strong>✍️ Content Created:</strong> Professional blog post, social media content, and marketing copy generated.<br><br>
-                        ` : ''}
-                        
-                        ${workflow.results.analysis ? `
-                            <strong>�� Strategic Analysis:</strong> Comprehensive business analysis with investment thesis and strategic recommendations.<br><br>
-                        ` : ''}
-                        
-                        <small style="opacity: 0.7;">
-                            Processed in ~${selectedAgents.length * 3}s • ${selectedAgents.length} agents collaborated • 
-                            Total value: Professional research + content + analysis
-                        </small>
-                    </div>
-                </div>
-            `;
-            
-            resultsSection.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        // Auto-select all agents after page loads (for demo)
-        setTimeout(() => {
-            if (availableAgents.length > 0 && selectedAgents.length === 0) {
-                const toggles = document.querySelectorAll('.agent-toggle');
-                toggles.forEach(toggle => {
-                    const agentId = toggle.dataset.agentId;
-                    selectedAgents.push(agentId);
-                    toggle.classList.add('active');
-                });
-                updateCostSummary();
-                updateExecuteButton();
-            }
-        }, 1500);
+
+        // keep your existing renderAgentCards, renderAgentToggles, executeWorkflow, showStatus, etc...
     </script>
 </body>
 </html>
