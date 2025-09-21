@@ -21,16 +21,16 @@ python-dateutil>=2.8.0
 # Environment variables
 python-dotenv>=1.0.0
 
-# For potential Coral Protocol integration
+# For Coral Protocol integration
 websockets>=11.0
 
 # Development and debugging
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
 
-# Optional: Real Solana integration (uncomment if needed)
-# solana>=0.30.0
-# anchorpy>=0.19.0
+# Real Solana integration (Devnet SDK)
+git+https://github.com/michaelhly/solana-py.git
+solders>=0.20.0
 
 # For enhanced logging and monitoring
-structlog>=23.1.0aiohttp>=3.9.0
+structlog>=23.1.0
