@@ -7,6 +7,14 @@ from typing import List, Optional, Dict, Any
 import asyncio
 import uvicorn
 import os
+import json
+
+# Solana
+from solana.rpc.async_api import AsyncClient
+from solana.keypair import Keypair
+from solana.transaction import Transaction
+from solana.system_program import TransferParams, transfer
+from solders.pubkey import Pubkey
 
 # Import our enhanced marketplace with Coral integration
 from agent_marketplace import AgentMarketplace, WorkflowRequest
@@ -30,6 +38,40 @@ app.add_middleware(
 # Initialize the marketplace with Coral integration
 marketplace = AgentMarketplace()
 coral_integration = CoralMarketplaceIntegration(marketplace)
+
+# -------------------
+# Solana Wallet Helpers
+# -------------------
+
+WALLET_FILE = "devnet-keypair.json"
+
+def load_or_create_wallet():
+    """Load or create a Solana devnet wallet"""
+    if os.path.exists(WALLET_FILE):
+        with open(WALLET_FILE, "r") as f:
+            secret = json.load(f)
+        return Keypair.from_secret_key(bytes(secret))
+    kp = Keypair()
+    with open(WALLET_FILE, "w") as f:
+        json.dump(list(kp.secret_key), f)
+    return kp
+
+async def send_devnet_payment(sender: Keypair, recipient: str, sol_amount: float):
+    """Send a real payment on Solana Devnet"""
+    client = AsyncClient("https://api.devnet.solana.com")
+    lamports = int(sol_amount * 1e9)  # SOL → lamports
+    txn = Transaction().add(
+        transfer(
+            TransferParams(
+                from_pubkey=sender.public_key,
+                to_pubkey=Pubkey.from_string(recipient),
+                lamports=lamports,
+            )
+        )
+    )
+    resp = await client.send_transaction(txn, sender)
+    await client.close()
+    return resp
 
 # -------------------
 # WebSocket for Live Updates
@@ -145,13 +187,25 @@ async def get_recent_transactions():
 @app.post("/api/payment/create")
 async def create_payment(request: PaymentRequest):
     try:
-        payment_details = await marketplace.create_payment_request(
-            agent_ids=request.agent_ids,
-            user_wallet=request.user_wallet,
-            user_id=request.user_id
+        # Each agent costs 0.01 SOL for demo
+        total_cost = len(request.agent_ids) * 0.01
+
+        kp = load_or_create_wallet()
+        tx_sig = await send_devnet_payment(
+            sender=kp,
+            recipient=request.user_wallet,
+            sol_amount=total_cost
         )
-        return payment_details
+
+        await broadcast_update(f"💸 Payment sent: {tx_sig.value}")
+
+        return {
+            "status": "success",
+            "total_cost_sol": total_cost,
+            "transaction_signature": str(tx_sig.value)
+        }
     except Exception as e:
+        await broadcast_update(f"❌ Payment error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/agents/{agent_id}/details")
@@ -238,5 +292,5 @@ if __name__ == "__main__":
     print("🌊 Agent Marketplace with Coral Protocol starting...")
     print("🏪 Available at: http://localhost:8000")
     print("🔌 Coral Server expected at: http://localhost:5555")
-    print("🎯 Ready for hackathon demo with real Coral integration + WebSockets!")
+    print("🎯 Ready for hackathon demo with real Coral integration + WebSockets + Solana Devnet payments!")
     uvicorn.run(app, host="0.0.0.0", port=8000)
