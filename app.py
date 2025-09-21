@@ -1,9 +1,8 @@
-from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 import asyncio
 import uvicorn
 import os
@@ -18,7 +17,6 @@ from solana.system_program import TransferParams, transfer
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
-
 # Import our enhanced marketplace with Coral integration
 from agent_marketplace import AgentMarketplace, WorkflowRequest
 from coral_integration import CoralMarketplaceIntegration
@@ -29,7 +27,9 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Add CORS middleware
+# -------------------
+# Middleware
+# -------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -38,14 +38,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize the marketplace with Coral integration
+# -------------------
+# Marketplace + Coral
+# -------------------
 marketplace = AgentMarketplace()
 coral_integration = CoralMarketplaceIntegration(marketplace)
 
 # -------------------
 # Solana Wallet Helpers
 # -------------------
-
 WALLET_FILE = "devnet-keypair.json"
 
 def load_or_create_wallet():
@@ -53,33 +54,34 @@ def load_or_create_wallet():
     if os.path.exists(WALLET_FILE):
         with open(WALLET_FILE, "r") as f:
             secret = json.load(f)
-        return Keypair.from_secret_key(bytes(secret))
+        return Keypair.from_bytes(bytes(secret[:64]))  # fix for solders
     kp = Keypair()
     with open(WALLET_FILE, "w") as f:
-        json.dump(list(kp.secret_key), f)
+        json.dump(list(kp.secret()), f)
     return kp
 
 async def send_devnet_payment(sender: Keypair, recipient: str, sol_amount: float):
     """Send a real payment on Solana Devnet"""
     client = AsyncClient("https://api.devnet.solana.com")
     lamports = int(sol_amount * 1e9)  # SOL → lamports
+
     txn = Transaction().add(
         transfer(
             TransferParams(
-                from_pubkey=sender.public_key,
+                from_pubkey=sender.pubkey(),
                 to_pubkey=Pubkey.from_string(recipient),
                 lamports=lamports,
             )
         )
     )
     resp = await client.send_transaction(txn, sender)
+    await client.confirm_transaction(resp.value)  # wait until finalized
     await client.close()
-    return resp
+    return resp.value
 
 # -------------------
 # WebSocket for Live Updates
 # -------------------
-
 connected_clients: List[WebSocket] = []
 
 @app.websocket("/ws/updates")
@@ -106,17 +108,14 @@ async def broadcast_update(message: str):
 # -------------------
 # Startup
 # -------------------
-
 @app.on_event("startup")
 async def startup_event():
-    """Initialize Coral Protocol integration on startup"""
     print("🚀 Starting Agent Marketplace with Coral Protocol...")
     await coral_integration.initialize_coral_integration()
 
 # -------------------
 # API Models
 # -------------------
-
 class PaymentRequest(BaseModel):
     agent_ids: List[str]
     user_wallet: str
@@ -131,7 +130,6 @@ class QuickWorkflowRequest(BaseModel):
 # -------------------
 # UI
 # -------------------
-
 @app.get("/", response_class=HTMLResponse)
 async def home():
     with open("templates/index.html", "r") as f:
@@ -140,7 +138,6 @@ async def home():
 # -------------------
 # Marketplace Endpoints
 # -------------------
-
 @app.get("/api/agents")
 async def get_available_agents():
     catalog = marketplace.get_agent_catalog()
@@ -157,8 +154,7 @@ async def get_available_agents():
 @app.get("/api/marketplace/stats")
 async def get_marketplace_stats():
     stats = marketplace.get_marketplace_stats()
-    coral_status = coral_integration.get_coral_status()
-    stats["coral_integration"] = coral_status
+    stats["coral_integration"] = coral_integration.get_coral_status()
     return stats
 
 @app.post("/api/workflow/execute")
@@ -176,101 +172,41 @@ async def execute_workflow(request: WorkflowRequest):
         await broadcast_update(f"❌ Workflow error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/workflow/{workflow_id}")
-async def get_workflow_result(workflow_id: str):
-    result = marketplace.get_workflow_result(workflow_id)
-    if not result:
-        raise HTTPException(status_code=404, detail="Workflow not found")
-    return result
-
-@app.get("/api/transactions")
-async def get_recent_transactions():
-    return marketplace.get_recent_transactions()
-
 @app.post("/api/payment/create")
 async def create_payment(request: PaymentRequest):
     try:
-        # Each agent costs 0.01 SOL for demo
-        total_cost = len(request.agent_ids) * 0.01
-
+        total_cost = len(request.agent_ids) * 0.01  # 0.01 SOL per agent
         kp = load_or_create_wallet()
+
         tx_sig = await send_devnet_payment(
             sender=kp,
             recipient=request.user_wallet,
             sol_amount=total_cost
         )
 
-        await broadcast_update(f"💸 Payment sent: {tx_sig.value}")
+        explorer_url = f"https://explorer.solana.com/tx/{tx_sig}?cluster=devnet"
+        await broadcast_update(f"💸 Payment sent: {explorer_url}")
 
         return {
             "status": "success",
             "total_cost_sol": total_cost,
-            "transaction_signature": str(tx_sig.value)
+            "transaction_signature": tx_sig,
+            "explorer_url": explorer_url
         }
     except Exception as e:
         await broadcast_update(f"❌ Payment error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/agents/{agent_id}/details")
-async def get_agent_details(agent_id: str):
-    agent = marketplace.get_agent_details(agent_id)
-    if not agent:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    return agent
-
 # -------------------
-# Coral Protocol Endpoints
+# Health + Quick Workflow
 # -------------------
-
-@app.get("/api/coral/status")
-async def get_coral_status():
-    return coral_integration.get_coral_status()
-
-@app.post("/api/coral/discover-agents")
-async def coral_discover_agents(request: Dict[str, Any]):
-    category = request.get("category", "All")
-    max_price = request.get("max_price_sol")
-    agents = marketplace.get_agent_catalog()["agents"]
-    if category != "All":
-        agents = [a for a in agents if a["category"] == category]
-    if max_price:
-        agents = [a for a in agents if a["price_sol"] <= max_price]
-    return {
-        "discovered_agents": len(agents),
-        "agents": agents,
-        "coral_protocol_enabled": True
-    }
-
-@app.post("/api/coral/execute-workflow")
-async def coral_execute_workflow(request: Dict[str, Any]):
-    query = request.get("query")
-    agent_ids = request.get("agent_ids", [])
-    user_wallet = request.get("user_wallet", "coral_demo_wallet")
-    if not query or not agent_ids:
-        raise HTTPException(status_code=400, detail="Query and agent_ids required")
-
-    await broadcast_update(f"🌊 Coral workflow started: {query}")
-    result = await coral_integration.execute_coral_workflow(query, agent_ids, user_wallet)
-    await broadcast_update("🏁 Coral workflow completed!")
-
-    return {
-        "workflow_executed": True,
-        "coral_coordinated": True,
-        "result": result
-    }
-
-@app.get("/api/agents/discover")
-async def debug_discover_agents():
-    return marketplace.get_agent_catalog()
-
 @app.get("/health")
 async def health_check():
-    coral_status = coral_integration.get_coral_status()
     return {
         "status": "healthy",
         "marketplace": "running",
         "total_agents": len(marketplace.get_agent_catalog()["agents"]),
-        "coral_protocol": coral_status,
+        "coral_protocol": coral_integration.get_coral_status(),
         "version": "2.0.0"
     }
 
@@ -288,7 +224,6 @@ async def demo_quick_workflow(request: QuickWorkflowRequest):
 # -------------------
 # Entrypoint
 # -------------------
-
 if __name__ == "__main__":
     os.makedirs("templates", exist_ok=True)
     os.makedirs("static", exist_ok=True)
