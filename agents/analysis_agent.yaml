@@ -1,0 +1,17 @@
+id: analysis
+name: Business Analyst AI
+description: Strategic business analysis, financial modeling, and market opportunity assessment
+price_sol: 0.018
+price_usd: 3.24
+capabilities:
+  - strategic_analysis
+  - financial_modeling
+  - risk_assessment
+  - opportunity_mapping
+category: Business Intelligence
+owner: strategy_consulting_ai
+rating: 4.7
+total_uses: 1756
+avg_processing_time: 4.2
+success_rate: 94.8
+icon: "📊"

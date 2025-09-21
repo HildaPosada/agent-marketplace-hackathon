@@ -142,3 +142,9 @@ class AgentMarketplace:
             "total_revenue_sol": total_revenue,
             "total_revenue_usd": total_revenue * 180
         }
+
+
+if __name__ == "__main__":
+    mp = AgentMarketplace()
+    print("Loaded agents:", [a.id for a in mp.agents])
+

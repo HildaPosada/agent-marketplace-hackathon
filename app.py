@@ -57,7 +57,10 @@ async def home():
     with open("templates/index.html", "r") as f:
         return f.read()
 
-# API Endpoints
+# -------------------
+# Marketplace Endpoints
+# -------------------
+
 @app.get("/api/agents")
 async def get_available_agents():
     """Get all available agents in the marketplace with Coral status"""
@@ -86,7 +89,6 @@ async def get_marketplace_stats():
 async def execute_workflow(request: WorkflowRequest):
     """Execute a multi-agent workflow with Coral Protocol coordination"""
     try:
-        # Use Coral integration for enhanced workflow execution
         result = await coral_integration.execute_coral_workflow(
             query=request.query,
             selected_agents=request.selected_agents,
@@ -130,7 +132,10 @@ async def get_agent_details(agent_id: str):
         raise HTTPException(status_code=404, detail="Agent not found")
     return agent
 
-# NEW: Coral Protocol specific endpoints
+# -------------------
+# Coral Protocol Endpoints
+# -------------------
+
 @app.get("/api/coral/status")
 async def get_coral_status():
     """Get Coral Protocol integration status"""
@@ -144,7 +149,6 @@ async def coral_discover_agents(request: Dict[str, Any]):
     
     agents = marketplace.get_agent_catalog()["agents"]
     
-    # Apply filters
     if category != "All":
         agents = [a for a in agents if a["category"] == category]
     if max_price:
@@ -174,6 +178,12 @@ async def coral_execute_workflow(request: Dict[str, Any]):
         "result": result
     }
 
+# Debug GET endpoint for quick testing
+@app.get("/api/agents/discover")
+async def debug_discover_agents():
+    """Debug endpoint: see all agents directly"""
+    return marketplace.get_agent_catalog()
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint with Coral status"""
@@ -187,21 +197,21 @@ async def health_check():
         "version": "2.0.0"
     }
 
-# Demo endpoint for quick testing
 @app.post("/api/demo/quick-workflow")
 async def demo_quick_workflow(request: QuickWorkflowRequest):
     """Quick demo workflow for hackathon presentation with Coral integration"""
-    
     result = await coral_integration.execute_coral_workflow(
         query=request.query,
         selected_agents=request.selected_agents,
         user_wallet=request.user_wallet
     )
-    
     return result
 
+# -------------------
+# Entrypoint
+# -------------------
+
 if __name__ == "__main__":
-    # Create templates directory if it doesn't exist
     os.makedirs("templates", exist_ok=True)
     os.makedirs("static", exist_ok=True)
     
