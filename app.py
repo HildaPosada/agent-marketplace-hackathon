@@ -9,9 +9,9 @@ import os
 import json
 
 # Solana Devnet client
-from solana.rpc.async_api import AsyncClient
+from solana.rpc.types import TxOpts
 from solana.transaction import Transaction
-from solana.system_program import TransferParams, transfer
+from solana.system_program import transfer, TransferParams
 
 # Use solders for keys + pubkeys
 from solders.keypair import Keypair
