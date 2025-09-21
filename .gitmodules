@@ -1,0 +1,13 @@
+[submodule "coral-server"]
+	path = coral-server
+	url = https://github.com/Coral-Protocol/coral-server.git
+[submodule "agents/firecrawl"]
+	path = agents/firecrawl
+	url = https://github.com/Coral-Protocol/Coral-FirecrawlMCP-Agent.git
+	branch = main
+[submodule "agents/interface"]
+	path = agents/interface
+	url = https://github.com/Coral-Protocol/Coral-Interface-Agent.git
+[submodule "agents/github"]
+	path = agents/github
+	url = https://github.com/Coral-Protocol/Coral-GithubMCP-Agent.git
