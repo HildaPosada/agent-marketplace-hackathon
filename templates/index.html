@@ -110,7 +110,7 @@
 
             ws.onopen = () => logUpdate("✅ Connected to live updates server");
             ws.onmessage = (event) => logUpdate(event.data);
-            ws.onerror = (err) => logUpdate("❌ WebSocket error");
+            ws.onerror = () => logUpdate("❌ WebSocket error");
             ws.onclose = () => logUpdate("⚠️ Disconnected from live updates");
         }
 
