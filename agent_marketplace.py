@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 class WorkflowRequest(BaseModel):
     query: str
-    selected_agents: List[str] = ["search_pro_2024", "content_creator_pro", "business_analyst_ai"]
+    selected_agents: List[str] = ["search", "content", "analysis"]
     user_wallet: str = "demo_wallet"
     user_id: str = "demo_user"
     preferences: Dict = {}
@@ -33,7 +33,7 @@ class AgentMarketplace:
     def __init__(self):
         self.agents = [
             Agent(
-                id="search_pro_2024",
+                id="search",
                 name="Search Pro Agent",
                 description="Advanced web search with real-time market intelligence and competitive analysis",
                 price_sol=0.012,
@@ -48,7 +48,7 @@ class AgentMarketplace:
                 icon="🔍"
             ),
             Agent(
-                id="content_creator_pro",
+                id="content",
                 name="Content Creator Pro",
                 description="Professional content creation for blogs, social media, and marketing campaigns",
                 price_sol=0.008,
@@ -63,7 +63,7 @@ class AgentMarketplace:
                 icon="✍️"
             ),
             Agent(
-                id="business_analyst_ai",
+                id="analysis",
                 name="Business Analyst AI",
                 description="Strategic business analysis, financial modeling, and market opportunity assessment",
                 price_sol=0.018,
@@ -108,7 +108,7 @@ class AgentMarketplace:
                 total_cost_sol += agent.price_sol
                 
                 # Simulate agent processing
-                if "search" in agent_id:
+                if agent_id == "search":
                     agent_results["search"] = {
                         "results": {
                             "web_results": [{"title": f"Market Analysis: {query}", "snippet": f"Comprehensive analysis of {query} market trends"}],
@@ -116,13 +116,13 @@ class AgentMarketplace:
                         },
                         "confidence_score": 0.94
                     }
-                elif "content" in agent_id:
+                elif agent_id == "content":
                     agent_results["content"] = {
                         "content": {
                             "blog_post": {"word_count": 1250, "seo_score": 89}
                         }
                     }
-                elif "analyst" in agent_id:
+                elif agent_id == "analysis":
                     agent_results["analysis"] = {
                         "analysis": {
                             "executive_summary": f"Strategic analysis reveals significant market opportunity in {query}",
