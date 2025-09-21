@@ -9,12 +9,15 @@ import uvicorn
 import os
 import json
 
-# Solana
+# Solana Devnet client
 from solana.rpc.async_api import AsyncClient
-from solana.keypair import Keypair
 from solana.transaction import Transaction
 from solana.system_program import TransferParams, transfer
+
+# Use solders for keys + pubkeys
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
+
 
 # Import our enhanced marketplace with Coral integration
 from agent_marketplace import AgentMarketplace, WorkflowRequest
