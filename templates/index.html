@@ -1,147 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏪 Agent Marketplace - Internet of Agents</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
-    <style>
-        /* keep all your existing styles... */
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏪 Agent Marketplace - Internet of Agents</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Global layout */
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #f5f7fa;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
 
-        /* Live updates panel */
-        .live-updates {
-            margin-top: 30px;
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            padding: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-        .live-updates h3 {
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-        .update-message {
-            margin-bottom: 8px;
-            padding: 6px 10px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.08);
-        }
-    </style>
+    /* Card style */
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s ease;
+    }
+    .card:hover { transform: translateY(-4px); }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0 0 10px;
+    }
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 0 0 15px;
+    }
+    .subtitle {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    /* Agent cards */
+    .agent-card {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .agent-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    }
+
+    .agent-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .agent-name { font-weight: 600; }
+    .agent-category {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .price-sol { font-weight: 600; }
+
+    /* Inputs */
+    .query-input {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: white;
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+    .query-input:focus { outline: none; border-color: #3b82f6; }
+
+    .agent-toggles { display: flex; flex-wrap: wrap; gap: 10px; }
+    .agent-toggle {
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .agent-toggle.active {
+      background: #3b82f6;
+      border-color: #2563eb;
+    }
+
+    /* Buttons */
+    .execute-btn {
+      margin-top: 15px;
+      background: #3b82f6;
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      width: 100%;
+    }
+    .execute-btn:hover { background: #2563eb; }
+    .execute-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Live updates */
+    .live-updates { max-height: 250px; overflow-y: auto; }
+    .update-message {
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>🏪 Agent Marketplace</h1>
-            <p class="subtitle">Rent specialized AI agents with Solana payments powered by Coral Protocol</p>
-        </header>
-        
-        <div class="main-grid">
-            <section class="section">
-                <h2 class="section-title">🤖 Available Agents</h2>
-                <div id="agentsGrid"></div>
-            </section>
-            
-            <section class="section">
-                <h2 class="section-title">⚡ Create Workflow</h2>
-                <input 
-                    type="text" 
-                    class="query-input" 
-                    id="queryInput"
-                    placeholder="Describe your project (e.g., sustainable energy business plan)..."
-                >
-                <div>
-                    <p style="margin-bottom: 10px; font-weight: 500;">Select Agents:</p>
-                    <div class="agent-toggles" id="agentToggles"></div>
-                </div>
-                <div class="cost-summary">
-                    <div class="cost-row">
-                        <span>Selected Agents:</span>
-                        <span id="selectedCount">0</span>
-                    </div>
-                    <div class="cost-row">
-                        <span>Total Cost:</span>
-                        <span id="totalCostSOL">0.000 SOL</span>
-                    </div>
-                    <div class="cost-row">
-                        <span>USD Value:</span>
-                        <span id="totalCostUSD">$0.00</span>
-                    </div>
-                </div>
-                <button class="execute-btn" id="executeBtn" disabled>
-                    <span id="btnText">Execute Workflow</span>
-                    <span id="btnLoader" class="loading" style="display: none;"></span>
-                </button>
-                <div id="statusMessage"></div>
-            </section>
-        </div>
-        
-        <section class="results-section" id="resultsSection">
-            <h2 class="section-title">📊 Workflow Results</h2>
-            <div id="workflowResults"></div>
-        </section>
-
-        <!-- Live Updates Panel -->
-        <section class="section live-updates">
-            <h3>📡 Live Updates</h3>
-            <div id="liveUpdatesLog"></div>
-        </section>
+  <div class="container">
+    <!-- Header -->
+    <div class="card">
+      <h1>🏪 Agent Marketplace</h1>
+      <p class="subtitle">Rent specialized AI agents with Solana payments powered by Coral Protocol</p>
     </div>
-    
-    <script>
-        let availableAgents = [];
-        let selectedAgents = [];
-        let solToUsd = 180;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadAgents();
-            initWebSocket();
+    <!-- Available Agents -->
+    <div class="card">
+      <h2>🤖 Available Agents</h2>
+      <div id="agentsGrid"></div>
+    </div>
+
+    <!-- Workflow Builder -->
+    <div class="card">
+      <h2>⚡ Create Workflow</h2>
+      <input type="text" class="query-input" id="queryInput" placeholder="Describe your project...">
+      <p style="margin-bottom: 10px; font-weight: 500;">Select Agents:</p>
+      <div class="agent-toggles" id="agentToggles"></div>
+      <div class="cost-summary" style="margin-top:15px;">
+        <p>Selected Agents: <span id="selectedCount">0</span></p>
+        <p>Total Cost: <span id="totalCostSOL">0.000 SOL</span> (<span id="totalCostUSD">$0.00</span>)</p>
+      </div>
+      <button class="execute-btn" id="executeBtn" disabled>
+        <span id="btnText">Execute Workflow</span>
+        <span id="btnLoader" class="loading" style="display:none;"></span>
+      </button>
+      <div id="statusMessage"></div>
+    </div>
+
+    <!-- Workflow Results -->
+    <div class="card">
+      <h2>📊 Workflow Results</h2>
+      <div id="workflowResults"></div>
+    </div>
+
+    <!-- Live Updates -->
+    <div class="card live-updates">
+      <h2>📡 Live Updates</h2>
+      <div id="liveUpdatesLog"></div>
+    </div>
+  </div>
+
+  <script>
+    let availableAgents = [];
+    let selectedAgents = [];
+    let solToUsd = 180;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAgents();
+      initWebSocket();
+    });
+
+    function initWebSocket() {
+      let wsUrl = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws/updates";
+      const ws = new WebSocket(wsUrl);
+      ws.onopen = () => logUpdate("✅ Connected to live updates server");
+      ws.onmessage = (event) => logUpdate(event.data);
+      ws.onerror = () => logUpdate("❌ WebSocket error");
+      ws.onclose = () => logUpdate("⚠️ Disconnected from live updates");
+    }
+
+    function logUpdate(message) {
+      const log = document.getElementById('liveUpdatesLog');
+      const entry = document.createElement('div');
+      entry.className = 'update-message';
+      entry.textContent = message;
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    async function loadAgents() {
+      try {
+        const response = await fetch('/api/agents');
+        const data = await response.json();
+        availableAgents = data.agents;
+        renderAgentCards();
+        renderAgentToggles();
+        initializeEventListeners();
+      } catch (error) {
+        console.error('Failed to load agents:', error);
+        showStatus('Failed to load agents. Please refresh.', 'error');
+      }
+    }
+
+    function renderAgentCards() {
+      const grid = document.getElementById('agentsGrid');
+      grid.innerHTML = availableAgents.map(agent => `
+        <div class="agent-card">
+          <div class="agent-header">
+            <div>
+              <div class="agent-name">${agent.icon} ${agent.name}</div>
+              <div class="agent-category">${agent.category}</div>
+            </div>
+            <div class="price-sol">${agent.price_sol.toFixed(3)} SOL</div>
+          </div>
+          <div class="agent-desc">${agent.description}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderAgentToggles() {
+      const toggles = document.getElementById('agentToggles');
+      toggles.innerHTML = availableAgents.map(agent => `
+        <button class="agent-toggle" data-agent-id="${agent.id}">
+          ${agent.icon} ${agent.name.split(' ')[0]}
+        </button>
+      `).join('');
+    }
+
+    function initializeEventListeners() {
+      document.getElementById('agentToggles').addEventListener('click', (e) => {
+        const button = e.target.closest('.agent-toggle');
+        if (!button) return;
+        toggleAgentSelection(button.dataset.agentId, button);
+      });
+      document.getElementById('queryInput').addEventListener('input', updateExecuteButton);
+      document.getElementById('executeBtn').addEventListener('click', executeWorkflow);
+    }
+
+    function toggleAgentSelection(agentId, button) {
+      const index = selectedAgents.indexOf(agentId);
+      if (index > -1) {
+        selectedAgents.splice(index, 1);
+        button.classList.remove('active');
+      } else {
+        selectedAgents.push(agentId);
+        button.classList.add('active');
+      }
+      updateCostSummary();
+      updateExecuteButton();
+    }
+
+    function updateCostSummary() {
+      const selectedObjects = availableAgents.filter(a => selectedAgents.includes(a.id));
+      const totalSOL = selectedObjects.reduce((sum, a) => sum + a.price_sol, 0);
+      document.getElementById('selectedCount').textContent = selectedAgents.length;
+      document.getElementById('totalCostSOL').textContent = `${totalSOL.toFixed(3)} SOL`;
+      document.getElementById('totalCostUSD').textContent = `$${(totalSOL * solToUsd).toFixed(2)}`;
+    }
+
+    function updateExecuteButton() {
+      const hasQuery = document.getElementById('queryInput').value.trim().length > 0;
+      document.getElementById('executeBtn').disabled = !(hasQuery && selectedAgents.length > 0);
+    }
+
+    async function executeWorkflow() {
+      const query = document.getElementById('queryInput').value.trim();
+      if (!query || selectedAgents.length === 0) return;
+      showStatus("⏳ Processing workflow...", "processing");
+      try {
+        const response = await fetch('/api/workflow/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, selected_agents: selectedAgents, user_wallet: 'demo_wallet' })
         });
+        const workflow = await response.json();
+        showStatus("✅ Workflow completed!", "success");
+        document.getElementById('workflowResults').innerHTML = `
+          <div class="update-message"><strong>Results:</strong> ${JSON.stringify(workflow)}</div>
+        `;
+      } catch (err) {
+        showStatus("❌ Workflow failed", "error");
+      }
+    }
 
-        // -------------------
-        // WebSocket live updates
-        // -------------------
-        function initWebSocket() {
-            let wsUrl = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws/updates";
-            const ws = new WebSocket(wsUrl);
-
-            ws.onopen = () => logUpdate("✅ Connected to live updates server");
-            ws.onmessage = (event) => logUpdate(event.data);
-            ws.onerror = () => logUpdate("❌ WebSocket error");
-            ws.onclose = () => logUpdate("⚠️ Disconnected from live updates");
-        }
-
-        function logUpdate(message) {
-            const log = document.getElementById('liveUpdatesLog');
-            const entry = document.createElement('div');
-            entry.className = 'update-message';
-            entry.textContent = message;
-            log.appendChild(entry);
-            log.scrollTop = log.scrollHeight;
-        }
-
-        // -------------------
-        // Existing JS functions (loadAgents, render, executeWorkflow, etc.)
-        // -------------------
-        async function loadAgents() {
-            try {
-                const response = await fetch('/api/agents');
-                const data = await response.json();
-                availableAgents = data.agents;
-                renderAgentCards();
-                renderAgentToggles();
-                initializeEventListeners();
-                console.log('Agents loaded:', availableAgents);
-            } catch (error) {
-                console.error('Failed to load agents:', error);
-                showStatus('Failed to load agents. Please refresh the page.', 'error');
-            }
-        }
-
-        // keep your existing renderAgentCards, renderAgentToggles, executeWorkflow, showStatus, etc...
-    </script>
+    function showStatus(msg, type) {
+      const status = document.getElementById('statusMessage');
+      status.innerHTML = `<div class="update-message">${msg}</div>`;
+    }
+  </script>
 </body>
 </html>
