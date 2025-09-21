@@ -47,6 +47,10 @@ coral_integration = CoralMarketplaceIntegration(marketplace)
 # -------------------
 # Solana Wallet Helpers
 # -------------------
+# -------------------
+# Solana Wallet Helpers
+# -------------------
+
 WALLET_FILE = "devnet-keypair.json"
 
 def load_or_create_wallet():
@@ -54,10 +58,10 @@ def load_or_create_wallet():
     if os.path.exists(WALLET_FILE):
         with open(WALLET_FILE, "r") as f:
             secret = json.load(f)
-        return Keypair.from_bytes(bytes(secret[:64]))  # fix for solders
+        return Keypair.from_secret_key(bytes(secret))
     kp = Keypair()
     with open(WALLET_FILE, "w") as f:
-        json.dump(list(kp.secret()), f)
+        json.dump(list(kp.secret_key), f)
     return kp
 
 async def send_devnet_payment(sender: Keypair, recipient: str, sol_amount: float):
@@ -68,16 +72,17 @@ async def send_devnet_payment(sender: Keypair, recipient: str, sol_amount: float
     txn = Transaction().add(
         transfer(
             TransferParams(
-                from_pubkey=sender.pubkey(),
+                from_pubkey=sender.public_key,
                 to_pubkey=Pubkey.from_string(recipient),
                 lamports=lamports,
             )
         )
     )
-    resp = await client.send_transaction(txn, sender)
-    await client.confirm_transaction(resp.value)  # wait until finalized
+
+    # Use TxOpts for reliable Devnet confirmation
+    resp = await client.send_transaction(txn, sender, opts=TxOpts(skip_confirmation=False))
     await client.close()
-    return resp.value
+    return resp
 
 # -------------------
 # WebSocket for Live Updates
@@ -175,23 +180,23 @@ async def execute_workflow(request: WorkflowRequest):
 @app.post("/api/payment/create")
 async def create_payment(request: PaymentRequest):
     try:
-        total_cost = len(request.agent_ids) * 0.01  # 0.01 SOL per agent
-        kp = load_or_create_wallet()
+        # Each agent costs 0.01 SOL for demo
+        total_cost = len(request.agent_ids) * 0.01
 
+        kp = load_or_create_wallet()
         tx_sig = await send_devnet_payment(
             sender=kp,
             recipient=request.user_wallet,
             sol_amount=total_cost
         )
 
-        explorer_url = f"https://explorer.solana.com/tx/{tx_sig}?cluster=devnet"
-        await broadcast_update(f"💸 Payment sent: {explorer_url}")
+        await broadcast_update(f"💸 Payment sent: {tx_sig.value}")
 
         return {
             "status": "success",
             "total_cost_sol": total_cost,
-            "transaction_signature": tx_sig,
-            "explorer_url": explorer_url
+            "transaction_signature": str(tx_sig.value),
+            "explorer_url": f"https://explorer.solana.com/tx/{tx_sig.value}?cluster=devnet"
         }
     except Exception as e:
         await broadcast_update(f"❌ Payment error: {str(e)}")
