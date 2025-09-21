@@ -1,0 +1,17 @@
+id: content
+name: Content Creator Pro
+description: Professional content creation for blogs, social media, and marketing campaigns
+price_sol: 0.008
+price_usd: 1.44
+capabilities:
+  - blog_writing
+  - social_media
+  - marketing_copy
+  - seo_optimization
+category: Content
+owner: creative_ai_studio
+rating: 4.8
+total_uses: 2891
+avg_processing_time: 3.1
+success_rate: 96.2
+icon: "✍️"

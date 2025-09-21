@@ -1,6 +1,8 @@
 import asyncio
 import json
 import uuid
+import yaml
+import os
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
@@ -31,53 +33,19 @@ class Agent:
 
 class AgentMarketplace:
     def __init__(self):
-        self.agents = [
-            Agent(
-                id="search",
-                name="Search Pro Agent",
-                description="Advanced web search with real-time market intelligence and competitive analysis",
-                price_sol=0.012,
-                price_usd=2.16,
-                capabilities=["web_search", "market_research", "competitor_analysis", "trend_analysis"],
-                category="Research",
-                owner="marketplace_labs",
-                rating=4.9,
-                total_uses=3247,
-                avg_processing_time=2.8,
-                success_rate=97.5,
-                icon="🔍"
-            ),
-            Agent(
-                id="content",
-                name="Content Creator Pro",
-                description="Professional content creation for blogs, social media, and marketing campaigns",
-                price_sol=0.008,
-                price_usd=1.44,
-                capabilities=["blog_writing", "social_media", "marketing_copy", "seo_optimization"],
-                category="Content",
-                owner="creative_ai_studio",
-                rating=4.8,
-                total_uses=2891,
-                avg_processing_time=3.1,
-                success_rate=96.2,
-                icon="✍️"
-            ),
-            Agent(
-                id="analysis",
-                name="Business Analyst AI",
-                description="Strategic business analysis, financial modeling, and market opportunity assessment",
-                price_sol=0.018,
-                price_usd=3.24,
-                capabilities=["strategic_analysis", "financial_modeling", "risk_assessment", "opportunity_mapping"],
-                category="Business Intelligence",
-                owner="strategy_consulting_ai",
-                rating=4.7,
-                total_uses=1756,
-                avg_processing_time=4.2,
-                success_rate=94.8,
-                icon="📊"
-            )
-        ]
+        self.agents = []
+
+        # Load agents dynamically from YAML files
+        agents_path = "agents"
+        if os.path.exists(agents_path):
+            for file in os.listdir(agents_path):
+                if file.endswith(".yaml"):
+                    with open(os.path.join(agents_path, file), "r") as f:
+                        data = yaml.safe_load(f)
+                        self.agents.append(Agent(**data))
+        else:
+            print("⚠️ Agents folder not found. No agents loaded.")
+
         self.workflows = {}
         self.transactions = []
         
@@ -111,8 +79,16 @@ class AgentMarketplace:
                 if agent_id == "search":
                     agent_results["search"] = {
                         "results": {
-                            "web_results": [{"title": f"Market Analysis: {query}", "snippet": f"Comprehensive analysis of {query} market trends"}],
-                            "market_intelligence": {"market_size_usd": "$47.2B", "growth_rate": "23.4% CAGR"}
+                            "web_results": [
+                                {
+                                    "title": f"Market Analysis: {query}",
+                                    "snippet": f"Comprehensive analysis of {query} market trends"
+                                }
+                            ],
+                            "market_intelligence": {
+                                "market_size_usd": "$47.2B",
+                                "growth_rate": "23.4% CAGR"
+                            }
                         },
                         "confidence_score": 0.94
                     }
@@ -126,7 +102,10 @@ class AgentMarketplace:
                     agent_results["analysis"] = {
                         "analysis": {
                             "executive_summary": f"Strategic analysis reveals significant market opportunity in {query}",
-                            "investment_thesis": {"investment_required": "$1.5M - $3M", "expected_roi": "300-500% over 3 years"}
+                            "investment_thesis": {
+                                "investment_required": "$1.5M - $3M",
+                                "expected_roi": "300-500% over 3 years"
+                            }
                         }
                     }
         
